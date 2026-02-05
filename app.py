@@ -1,15 +1,9 @@
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
-
-
 from fastapi import FastAPI, UploadFile, File, Form
 import base64
 import math
 import collections
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
 
 SUPPORTED_LANGUAGES = ["english", "hindi", "tamil", "telugu", "kannada"]
 
@@ -24,14 +18,16 @@ def base64_entropy(s):
 
 @app.post("/detect")
 async def detect_voice(
-    language: str = Form("english"),
+    language: str = Form(...),
     audio: UploadFile = File(...)
 ):
     language = language.lower()
 
     if language not in SUPPORTED_LANGUAGES:
-    language = "english"
-
+        return {
+            "error": "Unsupported language",
+            "supported_languages": SUPPORTED_LANGUAGES
+        }
 
     # Read uploaded file
     audio_bytes = await audio.read()
